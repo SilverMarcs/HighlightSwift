@@ -7,11 +7,12 @@ public struct CodeText {
     internal var mode: HighlightMode = .automatic
     internal var style: CodeTextStyle = .plain
     internal var colors: CodeTextColors = .theme(.xcode)
+    internal var highlightedString: String = ""
     
     internal var success: ((HighlightResult) -> Void)?
     internal var failure: ((Error) -> Void)?
     internal var result: ((Result<HighlightResult, Error>) -> Void)?
-
+    
     @State internal var highlightTask: Task<Void, Never>?
     @State internal var highlightResult: HighlightResult?
     
@@ -28,7 +29,31 @@ public struct CodeText {
     }
     
     internal var attributedText: AttributedString {
-        highlightResult?.attributedText ?? AttributedString(stringLiteral: text)
+        var text = highlightResult?.attributedText ?? AttributedString(stringLiteral: self.text)
+        
+        if !highlightedString.isEmpty {
+            let stringToSearch = String(text.characters)
+            let searchTerm = highlightedString
+            
+            var searchRange = stringToSearch.startIndex..<stringToSearch.endIndex
+            
+            while let range = stringToSearch.range(of: searchTerm, options: [.caseInsensitive], range: searchRange) {
+                let startOffset = stringToSearch.distance(from: stringToSearch.startIndex, to: range.lowerBound)
+                let endOffset = stringToSearch.distance(from: stringToSearch.startIndex, to: range.upperBound)
+                
+                let lowerBound = text.index(text.startIndex, offsetByCharacters: startOffset)
+                let upperBound = text.index(text.startIndex, offsetByCharacters: endOffset)
+                
+                let attributedRange = lowerBound..<upperBound
+                
+                text[attributedRange].backgroundColor = .yellow
+                text[attributedRange].foregroundColor = .black
+                
+                searchRange = range.upperBound..<searchRange.upperBound
+            }
+        }
+        
+        return text
     }
     
     @MainActor

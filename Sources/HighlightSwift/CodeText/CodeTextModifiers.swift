@@ -50,4 +50,11 @@ extension CodeText {
         content.success = perform
         return content
     }
+    
+    /// highlights occurrences of the provided string in the code text.
+    public func highlightedString(_ string: String) -> CodeText {
+        var content = self
+        content.highlightedString = string
+        return content
+    }
 }

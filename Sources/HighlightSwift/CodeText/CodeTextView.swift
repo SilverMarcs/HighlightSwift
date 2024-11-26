@@ -44,6 +44,12 @@ extension CodeText: View {
                     await highlightText(colorScheme: newColorScheme)
                 }
             }
+            .onChange(of: highlightedString) { _ in
+                highlightTask?.cancel()
+                highlightTask = Task {
+                    await highlightText()
+                }
+            }
     }
 }
 
